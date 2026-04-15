@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v2 — Gestión Documental Red Fija</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:       #08131F;
+  --navy-mid:   #0D1E30;
+  --navy-light: #122439;
+  --navy-card:  #0F1E2E;
+  --blue:       #1564E8;
+  --blue-light: #3D80F5;
+  --blue-glow:  rgba(21,100,232,0.16);
+  --teal:       #00C9A7;
+  --teal-dim:   rgba(0,201,167,0.13);
+  --amber:      #F5A623;
+  --amber-dim:  rgba(245,166,35,0.13);
+  --red:        #E8445A;
+  --red-dim:    rgba(232,68,90,0.13);
+  --green:      #22C97A;
+  --green-dim:  rgba(34,201,122,0.13);
+  --purple:     #8B5CF6;
+  --purple-dim: rgba(139,92,246,0.13);
+  --t1: #DDE8FF;
+  --t2: #7A90BB;
+  --t3: #3D5275;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --surf: rgba(255,255,255,0.03);
+  --surf2: rgba(255,255,255,0.06);
+  --sw: 256px;
+  --r: 12px;
+  --r2: 8px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --fd: 'Space Grotesk', sans-serif;
+  --fb: 'DM Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--t1);font-family:var(--fb);font-size:14px;line-height:1.5;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ── LAYOUT ── */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sw);background:var(--navy-mid);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:100}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column}
+
+/* ── SIDEBAR ── */
+.sb-logo{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--blue),var(--teal));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sb-logo-name{font-family:var(--fd);font-size:17px;font-weight:700;letter-spacing:-.3px}
+.sb-logo-sub{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.sb-sec{font-size:10px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;padding:10px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r2);cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;transition:all .15s;margin-bottom:1px}
+.nav-item:hover{background:var(--surf2);color:var(--t1)}
+.nav-item.active{background:var(--blue-glow);color:var(--blue-light);border:1px solid rgba(21,100,232,.2)}
+.nav-ic{width:17px;height:17px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px}
+.sb-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.u-av{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.u-name{font-size:13px;font-weight:600;color:var(--t1)}
+.u-role{font-size:11px;color:var(--t3)}
+
+/* ── TOPBAR ── */
+.topbar{height:60px;background:rgba(8,19,31,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50}
+.tb-title-area{flex:1}
+.tb-title{font-family:var(--fd);font-size:16px;font-weight:600}
+.tb-bc{font-size:11px;color:var(--t3)}
+.tb-actions{display:flex;align-items:center;gap:10px}
+.btn-icon{width:34px;height:34px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:14px;transition:all .15s;position:relative}
+.btn-icon:hover{background:var(--surf2);color:var(--t1);border-color:var(--border2)}
+.bdot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--red);border-radius:50%;border:1.5px solid var(--navy)}
+.btn-p{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--fb)}
+.btn-p:hover{background:var(--blue-light);transform:translateY(-1px);box-shadow:0 4px 14px rgba(21,100,232,.4)}
+.btn-s{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--surf);color:var(--t2);border:1px solid var(--border);border-radius:var(--r2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;font-family:var(--fb)}
+.btn-s:hover{background:var(--surf2);color:var(--t1);border-color:var(--border2)}
+
+/* ── PAGE ── */
+.page{display:none}.page.active{display:block}
+.pb{padding:24px}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.sc{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);padding:18px;transition:all .2s;position:relative;overflow:hidden;cursor:default}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc.blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.sc.teal::before{background:linear-gradient(90deg,var(--teal),transparent)}
+.sc.amber::before{background:linear-gradient(90deg,var(--amber),transparent)}
+.sc.red::before{background:linear-gradient(90deg,var(--red),transparent)}
+.sc.green::before{background:linear-gradient(90deg,var(--green),transparent)}
+.sc.purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.sc:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.sc-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px}
+.sc.blue .sc-ic{background:var(--blue-glow)}
+.sc.teal .sc-ic{background:var(--teal-dim)}
+.sc.amber .sc-ic{background:var(--amber-dim)}
+.sc.red .sc-ic{background:var(--red-dim)}
+.sc.green .sc-ic{background:var(--green-dim)}
+.sc.purple .sc-ic{background:var(--purple-dim)}
+.sc-val{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--t1);line-height:1;margin-bottom:3px}
+.sc-lbl{font-size:11.5px;color:var(--t3);font-weight:500}
+.sc-delta{font-size:11px;font-weight:600;margin-top:5px}
+.up{color:var(--green)}.dn{color:var(--red)}
+
+/* ── CARD ── */
+.card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.ct{font-family:var(--fd);font-size:13.5px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
+.cb{padding:18px}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g64{display:grid;grid-template-columns:1.6fr 1fr;gap:18px}
+.g73{display:grid;grid-template-columns:2.2fr 1fr;gap:18px}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.fc{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surf);color:var(--t2);transition:all .15s}
+.fc:hover{border-color:var(--border2);color:var(--t1)}
+.fc.active{background:var(--blue-glow);border-color:rgba(21,100,232,.3);color:var(--blue-light);font-weight:600}
+
+/* ── PROYECTO CARD (nuevo estilo) ── */
+.proyecto-card{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;transition:all .2s;cursor:pointer}
+.proyecto-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-1px)}
+.pry-header{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.pry-type-badge{padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;flex-shrink:0}
+.bt-overlap{background:rgba(21,100,232,.2);color:var(--blue-light);border:1px solid rgba(21,100,232,.25)}
+.bt-saturacion{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(0,201,167,.2)}
+.bt-verticales{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.pry-name{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--t1);flex:1}
+.pry-meta-row{font-size:12px;color:var(--t3);display:flex;gap:12px;margin-top:2px}
+.pry-stats{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.pry-stat-item{text-align:center;min-width:48px}
+.pry-stat-val{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--t1)}
+.pry-stat-lbl{font-size:10px;color:var(--t3)}
+.pry-divider{width:1px;height:32px;background:var(--border)}
+/* Planos mini-list inside proyecto */
+.planos-strip{padding:10px 18px 14px}
+.planos-strip-title{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.plano-mini-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r2);border:1px solid var(--border);background:var(--surf);margin-bottom:6px;cursor:pointer;transition:all .15s}
+.plano-mini-row:hover{border-color:var(--border2);background:var(--surf2)}
+.plano-mini-row:last-child{margin-bottom:0}
+.plano-mini-id{font-size:11px;font-weight:700;color:var(--blue-light);background:var(--blue-glow);padding:2px 7px;border-radius:4px;flex-shrink:0;font-family:var(--fd)}
+.plano-mini-nombre{flex:1;font-size:13px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plano-mini-fase{font-size:11px;color:var(--t3);flex-shrink:0}
+.pmini-prog{width:80px;flex-shrink:0}
+.prog-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.pf-blue{background:linear-gradient(90deg,var(--blue),var(--teal))}
+.pf-green{background:var(--green)}
+.pf-amber{background:var(--amber)}
+.pf-red{background:var(--red)}
+.pmini-estado{flex-shrink:0}
+.chip{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap}
+.chip-ec{background:var(--blue-glow);color:var(--blue-light)}
+.chip-cp{background:var(--green-dim);color:var(--green)}
+.chip-at{background:var(--red-dim);color:var(--red)}
+.chip-nv{background:var(--amber-dim);color:var(--amber)}
+.chip-nk{background:var(--surf);color:var(--t3)}
+.pmini-alerta{width:20px;height:20px;border-radius:50%;background:var(--red-dim);border:1px solid rgba(232,68,90,.2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--red);flex-shrink:0}
+
+/* ── PLANO DETALLE ── */
+.back-btn-area{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.plano-detail-header{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:18px}
+.plano-detail-title{font-family:var(--fd);font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px}
+.plano-detail-sub{font-size:12.5px;color:var(--t3);display:flex;gap:16px;flex-wrap:wrap}
+.plano-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.pmd{background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px}
+.pmd-l{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.pmd-v{font-size:14px;font-weight:600;color:var(--t1)}
+
+/* ── FASES PIPELINE ── */
+.fases-pipeline{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px}
+.fase-step{flex:1;min-width:90px;padding:10px 8px;text-align:center;border-radius:var(--r2);border:1px solid var(--border);cursor:pointer;transition:all .15s;position:relative}
+.fase-step.completado{background:var(--green-dim);border-color:rgba(34,201,122,.2);color:var(--green)}
+.fase-step.en_curso{background:var(--blue-glow);border-color:rgba(21,100,232,.25);color:var(--blue-light)}
+.fase-step.pendiente{background:var(--surf);color:var(--t3)}
+.fase-step:hover{border-color:var(--border2)}
+.fs-name{font-size:12px;font-weight:700;display:block}
+.fs-pct{font-size:10px;opacity:.75;display:block;margin-top:2px}
+.fs-docs{font-size:10px;margin-top:3px;opacity:.7}
+
+/* ── FASES ACCORDION ── */
+.fase-block{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.fase-block-header{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;transition:background .15s}
+.fase-block-header:hover{background:var(--surf)}
+.fase-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.fase-block.completado .fase-num{background:var(--green-dim);color:var(--green)}
+.fase-block.en_curso .fase-num{background:var(--blue-glow);color:var(--blue-light)}
+.fase-block.pendiente .fase-num{background:var(--surf);color:var(--t3)}
+.fase-block-name{font-family:var(--fd);font-size:14px;font-weight:600;flex:1}
+.fase-block.completado .fase-block-name{color:var(--t1)}
+.fase-block.en_curso .fase-block-name{color:var(--t1)}
+.fase-block.pendiente .fase-block-name{color:var(--t3)}
+.fase-prog-mini{width:100px;flex-shrink:0}
+.fase-doc-count{font-size:12px;color:var(--t3);flex-shrink:0;margin-right:8px}
+.fase-chevron{color:var(--t3);font-size:12px;flex-shrink:0;transition:transform .2s}
+.fase-chevron.open{transform:rotate(90deg)}
+.fase-body{display:none;border-top:1px solid var(--border)}
+.fase-body.open{display:block}
+
+/* ── DOC TABLE ── */
+.doc-table{width:100%;border-collapse:collapse}
+.doc-table th{text-align:left;font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.doc-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;color:var(--t2)}
+.doc-table tr:last-child td{border-bottom:none}
+.doc-table tr:hover td{background:var(--surf)}
+.doc-name-cell{color:var(--t1);font-weight:500}
+.doc-req-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.req-si{background:var(--red-dim);color:var(--red)}
+.req-no{background:var(--surf);color:var(--t3)}
+.ds-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;white-space:nowrap}
+.ds-aprobado{background:var(--green-dim);color:var(--green);border-color:rgba(34,201,122,.2)}
+.ds-pendiente{background:var(--amber-dim);color:var(--amber);border-color:rgba(245,166,35,.2)}
+.ds-revision{background:var(--blue-glow);color:var(--blue-light);border-color:rgba(21,100,232,.2)}
+.ds-no_requerido{background:var(--surf);color:var(--t3);border-color:var(--border)}
+.act-btns{display:flex;gap:5px}
+.bsm{padding:4px 8px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surf);color:var(--t2);transition:all .15s;font-family:var(--fb)}
+.bsm:hover{background:var(--surf2);color:var(--t1)}
+.bsm.ap{border-color:rgba(34,201,122,.25);background:var(--green-dim);color:var(--green)}
+.bsm.rj{border-color:rgba(232,68,90,.2);background:var(--red-dim);color:var(--red)}
+.no-docs{padding:24px;text-align:center;color:var(--t3);font-size:13px}
+
+/* ── FORM ── */
+.form-section{background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.fs-title{font-family:var(--fd);font-size:14.5px;font-weight:600;color:var(--t1);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--blue-glow);color:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fr1{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:12px;font-weight:600;color:var(--t2);letter-spacing:.2px}
+.req-star{color:var(--red)}
+.fc2{padding:8px 11px;background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);color:var(--t1);font-size:13.5px;font-family:var(--fb);outline:none;transition:all .15s;width:100%}
+.fc2:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,100,232,.15)}
+.fc2::placeholder{color:var(--t3)}
+select.fc2{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%233D5275' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+/* Fase selector */
+.fase-sel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.fase-toggle{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:var(--r2);border:1px solid var(--border);cursor:pointer;background:var(--navy);transition:all .15s}
+.fase-toggle:hover{border-color:var(--blue-light)}
+.fase-toggle.sel{border-color:rgba(21,100,232,.4);background:var(--blue-glow)}
+.ftc-ic{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--t3);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all .15s}
+.fase-toggle.sel .ftc-ic{background:var(--blue);border-color:var(--blue);color:#fff}
+.ftc-lbl{font-size:12px;font-weight:500;color:var(--t2)}
+.fase-toggle.sel .ftc-lbl{color:var(--t1)}
+/* Responsables */
+.resp-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r2);border:1px solid var(--border);background:var(--navy);margin-bottom:7px}
+.resp-fase-tag{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:var(--blue-glow);color:var(--blue-light);width:82px;text-align:center;flex-shrink:0}
+.resp-sel{flex:1;padding:6px 10px;background:var(--navy-card);border:1px solid var(--border);border-radius:var(--r2);color:var(--t1);font-size:13px;font-family:var(--fb);outline:none}
+/* Doc config accordion */
+.dca{background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:10px}
+.dca-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border)}
+.dca-title{font-size:13px;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
+.dca-cnt{font-size:11px;color:var(--t3);background:var(--surf);padding:1px 7px;border-radius:99px}
+.dca-body{padding:10px 14px}
+.doc-ck{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r2);border:1px solid var(--border);background:var(--surf);cursor:pointer;transition:all .15s;margin-bottom:5px}
+.doc-ck:hover{border-color:var(--border2)}
+.doc-ck.chk{background:rgba(21,100,232,.07);border-color:rgba(21,100,232,.2)}
+.ckbox{width:15px;height:15px;border:1.5px solid var(--t3);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all .15s}
+.doc-ck.chk .ckbox{background:var(--blue);border-color:var(--blue);color:#fff}
+.ck-name{flex:1;font-size:12.5px;color:var(--t2)}
+.doc-ck.chk .ck-name{color:var(--t1)}
+.ck-req{font-size:10px;padding:2px 6px;border-radius:3px;border:1px solid var(--border);cursor:pointer;font-weight:600;flex-shrink:0}
+.ck-req.r{background:var(--amber-dim);color:var(--amber)}
+.ck-req.o{background:var(--surf);color:var(--t3)}
+
+/* ── ALERTAS ── */
+.alert-row{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;border-radius:var(--r2);margin-bottom:7px;border:1px solid}
+.alert-row.alta{background:var(--red-dim);border-color:rgba(232,68,90,.2)}
+.alert-row.media{background:var(--amber-dim);border-color:rgba(245,166,35,.2)}
+.alert-row.baja{background:var(--blue-glow);border-color:rgba(21,100,232,.2)}
+.al-ic{font-size:13px;margin-top:1px;flex-shrink:0}
+.al-msg{font-size:13px;color:var(--t1);font-weight:500}
+.al-sub{font-size:11px;color:var(--t3);margin-top:1px}
+.al-pri{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;flex-shrink:0}
+.ap-alta{background:var(--red-dim);color:var(--red)}
+.ap-media{background:var(--amber-dim);color:var(--amber)}
+.ap-baja{background:var(--blue-glow);color:var(--blue-light)}
+
+/* ── ACTIVITY ── */
+.act-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.act-item:last-child{border-bottom:none;padding-bottom:0}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.act-text{font-size:13px;color:var(--t2);flex:1}
+.act-bold{color:var(--t1);font-weight:600}
+.act-time{font-size:10.5px;color:var(--t3);margin-top:1px}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.legend{display:flex;flex-direction:column;gap:8px}
+.leg-item{display:flex;align-items:center;gap:7px}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-lbl{font-size:12px;color:var(--t2)}
+.leg-val{font-size:13px;font-weight:700;color:var(--t1);margin-left:auto;padding-left:14px}
+
+/* ── BAR CHART ── */
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:6px}
+.bg{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
+.bw{display:flex;gap:3px;align-items:flex-end;height:72px}
+.bar{border-radius:3px 3px 0 0;min-height:3px}
+.blbl{font-size:10px;color:var(--t3);text-align:center}
+
+/* ── SEARCH ── */
+.search-input{display:flex;align-items:center;gap:7px;background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);padding:7px 11px;width:220px;transition:all .15s}
+.search-input:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,100,232,.1)}
+.search-input input{background:none;border:none;outline:none;color:var(--t1);font-size:13px;font-family:var(--fb);flex:1}
+.search-input input::placeholder{color:var(--t3)}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);z-index:200;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--r);width:90%;max-width:460px;box-shadow:var(--shadow);animation:fadeUp .2s ease}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.mt{font-family:var(--fd);font-size:14.5px;font-weight:600;color:var(--t1)}
+.mc{cursor:pointer;color:var(--t3);font-size:17px;transition:color .15s}.mc:hover{color:var(--t1)}
+.mb{padding:18px}
+.mf{display:flex;justify-content:flex-end;gap:9px;padding:12px 18px;border-top:1px solid var(--border)}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r2);padding:22px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.upload-zone:hover{border-color:var(--blue);background:var(--blue-glow)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--navy-mid);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--t1);box-shadow:var(--shadow);z-index:300;transform:translateY(70px);opacity:0;transition:all .3s ease}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab{padding:8px 14px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--blue-light);border-bottom-color:var(--blue);font-weight:600}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px 20px;color:var(--t3);font-size:13px}
+.empty-ic{font-size:32px;margin-bottom:10px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page.active .sc{animation:fadeIn .3s ease forwards;opacity:0}
+.page.active .sc:nth-child(1){animation-delay:.04s}
+.page.active .sc:nth-child(2){animation-delay:.08s}
+.page.active .sc:nth-child(3){animation-delay:.12s}
+.page.active .sc:nth-child(4){animation-delay:.16s}
+.page.active .sc:nth-child(5){animation-delay:.2s}
+.page.active .sc:nth-child(6){animation-delay:.24s}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">📡</div>
+    <div>
+      <div class="sb-logo-name">DocFlow</div>
+      <div class="sb-logo-sub">Red Fija · LPS</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Principal</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-ic">⬛</span>Dashboard</div>
+    <div class="nav-item" onclick="nav('proyectos',this)"><span class="nav-ic">📁</span>Proyectos<span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="nav('alertas',this)"><span class="nav-ic">🔔</span>Alertas<span class="nav-badge">5</span></div>
+    <div class="sb-sec">Gestión</div>
+    <div class="nav-item" onclick="nav('nuevo-proyecto',this)"><span class="nav-ic">➕</span>Nuevo Proyecto</div>
+    <div class="nav-item" onclick="nav('contratas',this)"><span class="nav-ic">🏢</span>Contratas</div>
+    <div class="sb-sec">Reportes</div>
+    <div class="nav-item" onclick="nav('reportes',this)"><span class="nav-ic">📊</span>Indicadores</div>
+  </nav>
+  <div class="sb-user">
+    <div class="u-av">RP</div>
+    <div><div class="u-name">Ronnie Paredes</div><div class="u-role">Admin · TI</div></div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main">
+
+<header class="topbar">
+  <div class="tb-title-area">
+    <div class="tb-title" id="tb-title">Dashboard</div>
+    <div class="tb-bc" id="tb-bc">Inicio / Resumen General</div>
+  </div>
+  <div class="tb-actions">
+    <div class="search-input"><span style="color:var(--t3);font-size:12px;">🔍</span><input placeholder="Buscar proyecto, plano..."></div>
+    <div class="btn-icon" onclick="toast('🔔 5 alertas sin leer')">🔔<span class="bdot"></span></div>
+    <div class="btn-icon">⚙️</div>
+    <button class="btn-p" onclick="nav('nuevo-proyecto',null)">+ Nuevo Proyecto</button>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+<div class="pb">
+  <div class="stats-grid">
+    <div class="sc blue"><div class="sc-ic">📁</div><div class="sc-val">3</div><div class="sc-lbl">Proyectos Activos</div><div class="sc-delta up">↑ 1 nuevo</div></div>
+    <div class="sc purple"><div class="sc-ic">🗂️</div><div class="sc-val">9</div><div class="sc-lbl">Total Planos</div><div class="sc-delta up">↑ 2 esta semana</div></div>
+    <div class="sc amber"><div class="sc-ic">⏳</div><div class="sc-val">28</div><div class="sc-lbl">Docs. Pendientes</div><div class="sc-delta dn">↑ 4 nuevos</div></div>
+    <div class="sc green"><div class="sc-ic">✅</div><div class="sc-val">47</div><div class="sc-lbl">Docs. Aprobados</div><div class="sc-delta up">↑ 8 esta semana</div></div>
+    <div class="sc red"><div class="sc-ic">⚠️</div><div class="sc-val">5</div><div class="sc-lbl">Alertas Activas</div><div class="sc-delta dn">2 prioridad alta</div></div>
+    <div class="sc teal"><div class="sc-ic">🏢</div><div class="sc-val">3</div><div class="sc-lbl">Contratas Activas</div><div class="sc-delta up">Estable</div></div>
+  </div>
+
+  <div class="g73" style="margin-bottom:18px">
+    <!-- Proyectos con planos -->
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">📁 Proyectos y Planos</div><button class="btn-s" style="font-size:12px;padding:4px 10px" onclick="nav('proyectos',null)">Ver todos →</button></div>
+      <div style="padding:14px 18px" id="dash-proyectos-list"></div>
+    </div>
+    <!-- Right col -->
+    <div>
+      <div class="card" style="margin:0 0 18px 0">
+        <div class="ch"><div class="ct">📊 Estado Documentos</div></div>
+        <div class="cb">
+          <div class="donut-wrap">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="36" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="16"/>
+              <circle cx="50" cy="50" r="36" fill="none" stroke="#22C97A" stroke-width="16" stroke-dasharray="141 84" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="36" fill="none" stroke="#F5A623" stroke-width="16" stroke-dasharray="63 162" stroke-dashoffset="-141" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="36" fill="none" stroke="#1564E8" stroke-width="16" stroke-dasharray="22 183" stroke-dashoffset="-204" transform="rotate(-90 50 50)"/>
+              <text x="50" y="46" text-anchor="middle" fill="#DDE8FF" font-size="14" font-weight="700" font-family="Space Grotesk">62%</text>
+              <text x="50" y="57" text-anchor="middle" fill="#3D5275" font-size="8">aprobados</text>
+            </svg>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div><div class="leg-lbl">Aprobados</div><div class="leg-val">47</div></div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div><div class="leg-lbl">Pendientes</div><div class="leg-val">28</div></div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div><div class="leg-lbl">En revisión</div><div class="leg-val">8</div></div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--t3)"></div><div class="leg-lbl">No requerido</div><div class="leg-val">4</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="ch"><div class="ct">⚡ Actividad</div></div>
+        <div class="cb" style="padding-top:4px;padding-bottom:4px" id="dash-activity"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">📈 Docs Cargados por Mes</div></div>
+      <div class="cb">
+        <div class="bar-chart">
+          <div class="bg"><div class="bw"><div class="bar" style="height:40px;width:14px;background:var(--green)"></div><div class="bar" style="height:18px;width:14px;background:var(--amber)"></div></div><div class="blbl">Oct</div></div>
+          <div class="bg"><div class="bw"><div class="bar" style="height:55px;width:14px;background:var(--green)"></div><div class="bar" style="height:25px;width:14px;background:var(--amber)"></div></div><div class="blbl">Nov</div></div>
+          <div class="bg"><div class="bw"><div class="bar" style="height:48px;width:14px;background:var(--green)"></div><div class="bar" style="height:30px;width:14px;background:var(--amber)"></div></div><div class="blbl">Dic</div></div>
+          <div class="bg"><div class="bw"><div class="bar" style="height:62px;width:14px;background:var(--green)"></div><div class="bar" style="height:22px;width:14px;background:var(--amber)"></div></div><div class="blbl">Ene</div></div>
+          <div class="bg"><div class="bw"><div class="bar" style="height:28px;width:14px;background:var(--green)"></div><div class="bar" style="height:38px;width:14px;background:var(--amber)"></div></div><div class="blbl">Feb</div></div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:10px">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div><div class="leg-lbl" style="font-size:11px">Aprobados</div></div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div><div class="leg-lbl" style="font-size:11px">Pendientes</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">🚨 Alertas Prioritarias</div><button class="btn-s" style="font-size:12px;padding:4px 10px" onclick="nav('alertas',null)">Ver todas →</button></div>
+      <div class="cb" id="dash-alerts"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PROYECTOS (Proyecto > Planos)
+════════════════════════════════════════ -->
+<div id="page-proyectos" class="page">
+<div class="pb">
+  <div class="fbar">
+    <div class="fc active" onclick="filterProjects('todos',this)">Todos (3)</div>
+    <div class="fc" onclick="filterProjects('en_curso',this)">En Curso</div>
+    <div class="fc" onclick="filterProjects('atrasado',this)">Atrasados</div>
+    <div class="fc" onclick="filterProjects('completado',this)">Completados</div>
+    <div style="margin-left:auto;display:flex;gap:7px">
+      <div class="fc" onclick="filterType('Overlap',this)">Overlap</div>
+      <div class="fc" onclick="filterType('Saturación',this)">Saturación</div>
+      <div class="fc" onclick="filterType('Verticales',this)">Verticales</div>
+      <button class="btn-p" onclick="nav('nuevo-proyecto',null)">+ Nuevo</button>
+    </div>
+  </div>
+  <div id="proyectos-list"></div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DETALLE PLANO (Fases > Documentos)
+════════════════════════════════════════ -->
+<div id="page-detalle-plano" class="page">
+<div class="pb">
+  <div class="back-btn-area">
+    <button class="btn-s" onclick="goBackToProject()">← Volver al Proyecto</button>
+    <div>
+      <span style="font-size:12px;color:var(--t3)" id="dp-project-name"></span>
+      <span style="font-size:12px;color:var(--t3)"> / </span>
+      <span style="font-size:12px;color:var(--blue-light);font-weight:600" id="dp-plano-id"></span>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn-s" onclick="toast('📧 Notificación enviada a la contrata')">📧 Notificar</button>
+      <button class="btn-p" onclick="openUploadModal()">⬆️ Subir Documento</button>
+    </div>
+  </div>
+
+  <!-- Header del plano -->
+  <div class="plano-detail-header">
+    <div id="dp-nombre" class="plano-detail-title"></div>
+    <div class="plano-detail-sub" id="dp-sub"></div>
+    <div class="plano-meta-grid" id="dp-meta"></div>
+  </div>
+
+  <!-- Pipeline visual -->
+  <div class="fases-pipeline" id="dp-pipeline"></div>
+
+  <!-- Accordion de fases con sus documentos -->
+  <div id="dp-fases-accordion"></div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NUEVO PROYECTO
+════════════════════════════════════════ -->
+<div id="page-nuevo-proyecto" class="page">
+<div class="pb">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px">
+    <button class="btn-s" onclick="nav('proyectos',null)">← Cancelar</button>
+    <div>
+      <div style="font-family:var(--fd);font-size:17px;font-weight:700">Registrar Nuevo Proyecto</div>
+      <div style="font-size:12px;color:var(--t3)">Complete la información del proyecto y configure sus planos iniciales</div>
+    </div>
+  </div>
+
+  <!-- PASO 1 -->
+  <div class="form-section">
+    <div class="fs-title"><span class="step-num">1</span>Información General del Proyecto</div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Nombre del Proyecto <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: Overlap Norte Lima"></div>
+      <div class="fg"><label class="fl">Código del Proyecto <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: PRY-004" value="PRY-004"></div>
+    </div>
+    <div class="fr fr3">
+      <div class="fg"><label class="fl">Tipo de Proyecto <span class="req-star">*</span></label>
+        <select class="fc2"><option value="">Seleccionar...</option><option>Overlap</option><option>Saturación</option><option>Verticales</option></select></div>
+      <div class="fg"><label class="fl">Contrata Asignada <span class="req-star">*</span></label>
+        <select class="fc2"><option value="">Seleccionar...</option><option>Tecnocom S.A.</option><option>Infratel Peru</option><option>RedMax Perú</option></select></div>
+      <div class="fg"><label class="fl">Responsable LPS <span class="req-star">*</span></label>
+        <select class="fc2"><option value="">Asignar...</option><option>Carlos Méndez</option><option>Ana Torres</option><option>Luis Castillo</option><option>María Quispe</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Fecha de Inicio <span class="req-star">*</span></label><input type="date" class="fc2"></div>
+      <div class="fg"><label class="fl">Fecha Fin Estimada <span class="req-star">*</span></label><input type="date" class="fc2"></div>
+    </div>
+    <div class="fr fr1">
+      <div class="fg"><label class="fl">Descripción / Alcance</label><textarea class="fc2" rows="2" placeholder="Descripción general del proyecto..."></textarea></div>
+    </div>
+  </div>
+
+  <!-- PASO 2: REGISTRAR PLANOS -->
+  <div class="form-section">
+    <div class="fs-title"><span class="step-num">2</span>Registrar Planos del Proyecto</div>
+    <p style="font-size:13px;color:var(--t3);margin-bottom:14px">Cada proyecto puede tener múltiples planos. Cada plano tendrá sus propias fases y documentos a cumplir.</p>
+    <div id="planos-form-list">
+      <div class="plano-form-item" style="background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--blue-light)">Plano #1</span>
+          <span style="font-size:11px;color:var(--t3)">Primer plano del proyecto</span>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Nombre del Plano <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: Sector 3 - Av. Túpac Amaru"></div>
+          <div class="fg"><label class="fl">Código <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: OVL-NL-S3-001"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Contrata</label><select class="fc2"><option>Tecnocom S.A.</option><option>Infratel Peru</option></select></div>
+          <div class="fg"><label class="fl">Responsable de Campo</label><input type="text" class="fc2" placeholder="Nombre del responsable"></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-s" onclick="addPlanoForm()" style="margin-top:4px">+ Agregar otro plano</button>
+  </div>
+
+  <!-- PASO 3: FASES POR TIPO -->
+  <div class="form-section">
+    <div class="fs-title"><span class="step-num">3</span>Seleccionar Fases para los Planos</div>
+    <p style="font-size:13px;color:var(--t3);margin-bottom:14px">Las fases seleccionadas aplicarán a todos los planos de este proyecto. Pueden ajustarse individualmente luego.</p>
+    <div class="fase-sel-grid">
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">Diseño</div></div>
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">Permisos</div></div>
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">Logística</div></div>
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">Obra Civil</div></div>
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">PINT</div></div>
+      <div class="fase-toggle sel" onclick="toggleFase(this)"><div class="ftc-ic">✓</div><div class="ftc-lbl">PEXT</div></div>
+      <div class="fase-toggle" onclick="toggleFase(this)"><div class="ftc-ic"></div><div class="ftc-lbl">Integración</div></div>
+      <div class="fase-toggle" onclick="toggleFase(this)"><div class="ftc-ic"></div><div class="ftc-lbl">Cierre</div></div>
+    </div>
+  </div>
+
+  <!-- PASO 4: RESPONSABLES -->
+  <div class="form-section">
+    <div class="fs-title"><span class="step-num">4</span>Responsables por Fase</div>
+    <p style="font-size:13px;color:var(--t3);margin-bottom:14px">Asigne quién es responsable de subir y validar documentos en cada fase.</p>
+    <div id="resp-form-list">
+      <div class="resp-row"><div class="resp-fase-tag">Diseño</div><select class="resp-sel"><option>LPS</option><option>Contrata</option><option>LPS + Contrata</option></select><select class="resp-sel"><option>Carlos Méndez</option><option>Ana Torres</option></select></div>
+      <div class="resp-row"><div class="resp-fase-tag">Permisos</div><select class="resp-sel"><option>LPS</option><option>Contrata</option><option>LPS + Contrata</option></select><select class="resp-sel"><option>Carlos Méndez</option><option>Ana Torres</option></select></div>
+      <div class="resp-row"><div class="resp-fase-tag">Logística</div><select class="resp-sel"><option selected>LPS + Contrata</option><option>LPS</option><option>Contrata</option></select><select class="resp-sel"><option>Carlos Méndez</option><option selected>Ana Torres</option></select></div>
+      <div class="resp-row"><div class="resp-fase-tag">Obra Civil</div><select class="resp-sel"><option>LPS</option><option selected>Contrata</option><option>LPS + Contrata</option></select><select class="resp-sel"><option selected>Carlos Méndez</option><option>Ana Torres</option></select></div>
+      <div class="resp-row"><div class="resp-fase-tag">PINT</div><select class="resp-sel"><option>LPS</option><option selected>Contrata</option><option>LPS + Contrata</option></select><select class="resp-sel"><option>Carlos Méndez</option><option selected>Ana Torres</option></select></div>
+      <div class="resp-row"><div class="resp-fase-tag">PEXT</div><select class="resp-sel"><option>LPS</option><option selected>Contrata</option><option>LPS + Contrata</option></select><select class="resp-sel"><option selected>Carlos Méndez</option><option>Ana Torres</option></select></div>
+    </div>
+  </div>
+
+  <!-- PASO 5: DOCUMENTOS POR FASE -->
+  <div class="form-section">
+    <div class="fs-title"><span class="step-num">5</span>Configurar Documentos Requeridos por Fase</div>
+    <p style="font-size:13px;color:var(--t3);margin-bottom:14px">Documentos precargados según el tipo de proyecto. Marque cuáles son requeridos u opcionales para cada plano.</p>
+    <div id="docs-config-list"></div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px;padding-bottom:24px">
+    <button class="btn-s" onclick="nav('proyectos',null)">Cancelar</button>
+    <button class="btn-s">Guardar Borrador</button>
+    <button class="btn-p" onclick="toast('✅ Proyecto creado con 1 plano y 6 fases configuradas')">✅ Crear Proyecto</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     ALERTAS
+════════════════════════════════════════ -->
+<div id="page-alertas" class="page">
+<div class="pb">
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc red"><div class="sc-ic">🔴</div><div class="sc-val">2</div><div class="sc-lbl">Prioridad Alta</div></div>
+    <div class="sc amber"><div class="sc-ic">🟡</div><div class="sc-val">2</div><div class="sc-lbl">Prioridad Media</div></div>
+    <div class="sc blue"><div class="sc-ic">🔵</div><div class="sc-val">1</div><div class="sc-lbl">Prioridad Baja</div></div>
+  </div>
+  <div class="card" style="margin:0">
+    <div class="ch"><div class="ct">🚨 Alertas Activas</div><button class="btn-s" onclick="toast('📧 Alertas enviadas a todos los responsables')">📧 Notificar Todos</button></div>
+    <div class="cb" id="all-alerts"></div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CONTRATAS
+════════════════════════════════════════ -->
+<div id="page-contratas" class="page">
+<div class="pb">
+  <div class="g2">
+    <div id="contratas-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">➕ Nueva Contrata</div></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label class="fl">Razón Social <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Nombre de la empresa"></div>
+        <div class="fg"><label class="fl">Contacto Principal <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Nombre del contacto"></div>
+        <div class="fg"><label class="fl">Email <span class="req-star">*</span></label><input type="email" class="fc2" placeholder="correo@empresa.pe"></div>
+        <div class="fg"><label class="fl">RUC</label><input type="text" class="fc2" placeholder="20XXXXXXXXX"></div>
+        <button class="btn-p" style="justify-content:center" onclick="toast('✅ Contrata registrada')">Registrar Contrata</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     REPORTES
+════════════════════════════════════════ -->
+<div id="page-reportes" class="page">
+<div class="pb">
+  <div class="stats-grid">
+    <div class="sc green"><div class="sc-ic">📈</div><div class="sc-val">74%</div><div class="sc-lbl">Tasa Aprobación</div><div class="sc-delta up">↑ 4% vs mes ant.</div></div>
+    <div class="sc amber"><div class="sc-ic">⏱️</div><div class="sc-val">3.4d</div><div class="sc-lbl">Tiempo Revisión Prom.</div><div class="sc-delta up">↓ 0.6d mejora</div></div>
+    <div class="sc blue"><div class="sc-ic">🔄</div><div class="sc-val">1.7</div><div class="sc-lbl">Versiones / Doc Prom.</div><div class="sc-delta up">Estable</div></div>
+    <div class="sc red"><div class="sc-ic">📅</div><div class="sc-val">2</div><div class="sc-lbl">Planos Atrasados</div><div class="sc-delta dn">↑ 1 nuevo</div></div>
+  </div>
+  <div class="g2">
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">📊 Cumplimiento por Contrata</div></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:14px">
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--t1);font-weight:500">Tecnocom S.A.</span><span style="color:var(--green);font-weight:700">82%</span></div><div class="prog-bar" style="height:7px"><div class="prog-fill pf-green" style="width:82%"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--t1);font-weight:500">Infratel Peru</span><span style="color:var(--amber);font-weight:700">58%</span></div><div class="prog-bar" style="height:7px"><div class="prog-fill pf-amber" style="width:58%"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--t1);font-weight:500">RedMax Perú</span><span style="color:var(--red);font-weight:700">41%</span></div><div class="prog-bar" style="height:7px"><div class="prog-fill pf-red" style="width:41%"></div></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin:0">
+      <div class="ch"><div class="ct">📊 Docs Pendientes por Fase</div></div>
+      <div class="cb">
+        <div class="bar-chart" style="height:110px">
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:12px;width:18px;background:var(--amber)"></div></div><div class="blbl">Diseño</div></div>
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:40px;width:18px;background:var(--red)"></div></div><div class="blbl">Permisos</div></div>
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:8px;width:18px;background:var(--amber)"></div></div><div class="blbl">Logística</div></div>
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:52px;width:18px;background:var(--red)"></div></div><div class="blbl">Obra C.</div></div>
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:35px;width:18px;background:var(--amber)"></div></div><div class="blbl">PINT</div></div>
+          <div class="bg"><div class="bw" style="height:90px"><div class="bar" style="height:28px;width:18px;background:var(--amber)"></div></div><div class="blbl">PEXT</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODAL UPLOAD -->
+<div class="modal-ov" id="upload-modal">
+  <div class="modal">
+    <div class="mh"><div class="mt">⬆️ Subir Documento</div><div class="mc" onclick="closeModal()">✕</div></div>
+    <div class="mb">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label class="fl">Proyecto <span class="req-star">*</span></label><select class="fc2"><option>PRY-001 — Overlap Norte Lima</option><option>PRY-002 — Saturación Miraflores</option><option>PRY-003 — Verticales San Isidro</option></select></div>
+        <div class="fg"><label class="fl">Plano <span class="req-star">*</span></label><select class="fc2"><option>PLN-001 — Sector 3 Av. Túpac Amaru</option><option>PLN-002 — Sector 3 Jr. Los Pinos</option><option>PLN-003 — Sector 5 Av. Colonial</option></select></div>
+        <div class="fg"><label class="fl">Fase <span class="req-star">*</span></label><select class="fc2"><option>Obra Civil</option><option>Diseño</option><option>Permisos</option><option>PINT</option><option>PEXT</option></select></div>
+        <div class="fg"><label class="fl">Documento <span class="req-star">*</span></label><select class="fc2"><option>Plano de Tendido de Cable</option><option>Certificado de Empalme</option><option>Informe de Avance Semanal</option></select></div>
+      </div>
+      <div class="upload-zone" style="margin-top:14px" onclick="toast('📁 Seleccione su archivo...')">
+        <div style="font-size:26px;margin-bottom:7px">📄</div>
+        <div style="font-size:13px;color:var(--t2)">Arrastre su archivo aquí o haga clic</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">PDF, DWG, XLSX — máx. 50MB</div>
+      </div>
+      <div class="fg"><label class="fl">Comentario</label><textarea class="fc2" rows="2" placeholder="Observación opcional..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn-s" onclick="closeModal()">Cancelar</button>
+      <button class="btn-p" onclick="closeModal();toast('✅ Documento subido correctamente')">Subir Documento</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast-el"><span id="toast-msg">Acción completada</span></div>
+
+<script src="mocks/data.js"></script>
+<script>
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+const pageTitles = {
+  dashboard:        ['Dashboard',            'Inicio / Resumen General'],
+  proyectos:        ['Proyectos',            'Inicio / Lista de Proyectos'],
+  'detalle-plano':  ['Detalle de Plano',     'Inicio / Proyectos / Plano'],
+  alertas:          ['Alertas',              'Inicio / Alertas Activas'],
+  'nuevo-proyecto': ['Nuevo Proyecto',       'Inicio / Proyectos / Nuevo'],
+  contratas:        ['Contratas',            'Inicio / Contratas'],
+  reportes:         ['Indicadores',          'Inicio / Reportes']
+};
+
+let currentProjectId = null;
+
+function nav(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  const [title, bc] = pageTitles[pageId] || [pageId, ''];
+  document.getElementById('tb-title').textContent = title;
+  document.getElementById('tb-bc').textContent = bc;
+  window.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function typeClass(tipo) {
+  return { Overlap: 'bt-overlap', Saturación: 'bt-saturacion', Verticales: 'bt-verticales' }[tipo] || '';
+}
+
+function estadoChip(e) {
+  const map = { en_curso: ['chip-ec','En Curso'], completado: ['chip-cp','Completado'], atrasado: ['chip-at','Atrasado'], nuevo: ['chip-nv','Nuevo'], pendiente: ['chip-nk','Pendiente'] };
+  const [cls, label] = map[e] || ['chip-nk', e];
+  return `<span class="chip ${cls}">${label}</span>`;
+}
+
+function progFill(pct, estado) {
+  if (estado === 'atrasado') return 'pf-red';
+  if (pct === 100) return 'pf-green';
+  if (pct < 30) return 'pf-amber';
+  return 'pf-blue';
+}
+
+function docStatusBtn(estado) {
+  const map = {
+    aprobado:    ['ds-aprobado',    '✅ Aprobado'],
+    pendiente:   ['ds-pendiente',   '⏳ Pendiente'],
+    revision:    ['ds-revision',    '🔍 En Revisión'],
+    no_requerido:['ds-no_requerido','— No Requerido']
+  };
+  const [cls, lbl] = map[estado] || ['ds-pendiente','Pendiente'];
+  return `<span class="ds-btn ${cls}">${lbl}</span>`;
+}
+
+function alertIcon(tipo) {
+  return { vencimiento:'⏰', pendiente:'📋', revision:'🔍', inicio:'🆕' }[tipo] || '⚠️';
+}
+
+function renderAlertRow(a) {
+  const pry = MOCK_DATA.proyectos.find(p => p.id === a.proyecto);
+  const pln = pry?.planos.find(p => p.id === a.plano);
+  return `<div class="alert-row ${a.prioridad}">
+    <span class="al-ic">${alertIcon(a.tipo)}</span>
+    <div>
+      <div class="al-msg">${a.mensaje}</div>
+      <div class="al-sub">${pry?.nombre || a.proyecto} › ${pln?.nombre || a.plano} · ${a.fecha}</div>
+    </div>
+    <span class="al-pri ap-${a.prioridad}">${a.prioridad}</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// RENDER: PROYECTOS LIST (Proyecto > Planos)
+// ══════════════════════════════════════
+function renderProyectoCard(p) {
+  const completados = p.planos.filter(pl => pl.estado === 'completado').length;
+  const planoRows = p.planos.map(pl => {
+    const alertDot = pl.alertas > 0
+      ? `<div class="pmini-alerta">${pl.alertas}</div>` : '';
+    return `<div class="plano-mini-row" onclick="openPlano('${p.id}','${pl.id}')">
+      <div class="plano-mini-id">${pl.codigo}</div>
+      <div class="plano-mini-nombre">${pl.nombre}</div>
+      <div class="plano-mini-fase" style="min-width:80px;text-align:right;font-size:11px;color:var(--t3)">${pl.faseActual}</div>
+      <div class="pmini-prog">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:3px"><span>${pl.progreso}%</span></div>
+        <div class="prog-bar"><div class="prog-fill ${progFill(pl.progreso, pl.estado)}" style="width:${pl.progreso}%"></div></div>
+      </div>
+      <div class="pmini-estado">${estadoChip(pl.estado)}</div>
+      ${alertDot}
+    </div>`;
+  }).join('');
+
+  return `<div class="proyecto-card">
+    <div class="pry-header">
+      <span class="pry-type-badge ${typeClass(p.tipo)}">${p.tipo}</span>
+      <div style="flex:1;min-width:0">
+        <div class="pry-name">${p.nombre}</div>
+        <div class="pry-meta-row">
+          <span>📋 ${p.id}</span>
+          <span>🏢 ${p.contrata}</span>
+          <span>👤 ${p.responsableLPS}</span>
+          <span>📅 ${p.fechaFin}</span>
+        </div>
+      </div>
+      <div class="pry-stats">
+        <div class="pry-stat-item">
+          <div class="pry-stat-val">${p.totalPlanos}</div>
+          <div class="pry-stat-lbl">Planos</div>
+        </div>
+        <div class="pry-divider"></div>
+        <div class="pry-stat-item">
+          <div class="pry-stat-val">${completados}</div>
+          <div class="pry-stat-lbl">Cerrados</div>
+        </div>
+        <div class="pry-divider"></div>
+        <div class="pry-stat-item">
+          <div class="pry-stat-val" style="color:${p.alertas > 0 ? 'var(--red)' : 'var(--green)'}">${p.alertas}</div>
+          <div class="pry-stat-lbl">Alertas</div>
+        </div>
+        <div style="margin-left:8px">${estadoChip(p.estado)}</div>
+      </div>
+    </div>
+    <div class="planos-strip">
+      <div class="planos-strip-title">Planos (${p.planos.length})</div>
+      ${planoRows}
+    </div>
+  </div>`;
+}
+
+function renderAllProyectos(lista) {
+  const el = document.getElementById('proyectos-list');
+  el.innerHTML = lista.length
+    ? lista.map(renderProyectoCard).join('')
+    : `<div class="empty"><div class="empty-ic">📭</div>No se encontraron proyectos</div>`;
+}
+
+// ══════════════════════════════════════
+// OPEN PLANO → DETALLE
+// ══════════════════════════════════════
+function openPlano(pryId, plnId) {
+  currentProjectId = pryId;
+  const pry = MOCK_DATA.proyectos.find(p => p.id === pryId);
+  const pln = pry.planos.find(p => p.id === plnId);
+
+  document.getElementById('dp-project-name').textContent = pry.nombre;
+  document.getElementById('dp-plano-id').textContent = plnId;
+  document.getElementById('dp-nombre').textContent = pln.nombre;
+  document.getElementById('dp-sub').innerHTML = `
+    <span>📋 ${pln.codigo}</span>
+    <span>🏢 ${pln.contrata}</span>
+    <span>👤 ${pln.responsable}</span>
+    <span>📍 Fase actual: <strong style="color:var(--t1)">${pln.faseActual}</strong></span>`;
+
+  // Meta
+  const totalDocs = pln.fases.reduce((acc, f) => acc + f.documentos.length, 0);
+  const aprobados = pln.fases.reduce((acc, f) => acc + f.documentos.filter(d => d.estado === 'aprobado').length, 0);
+  const pendientes = pln.fases.reduce((acc, f) => acc + f.documentos.filter(d => d.estado === 'pendiente').length, 0);
+  document.getElementById('dp-meta').innerHTML = [
+    { label: 'Contrata', value: pln.contrata },
+    { label: 'Responsable', value: pln.responsable },
+    { label: 'Total Docs', value: totalDocs },
+    { label: 'Aprobados', value: `<span style="color:var(--green);font-weight:700">${aprobados}</span>` },
+    { label: 'Pendientes', value: `<span style="color:var(--amber);font-weight:700">${pendientes}</span>` },
+    { label: 'Estado', value: `<span style="color:${pln.estado==='atrasado'?'var(--red)':pln.estado==='completado'?'var(--green)':'var(--blue-light)'};">${pln.estado.replace('_',' ')}</span>` },
+    { label: 'Progreso', value: `${pln.progreso}%` },
+    { label: 'Alertas', value: `<span style="color:${pln.alertas>0?'var(--red)':'var(--green)'}">${pln.alertas}</span>` }
+  ].map(m => `<div class="pmd"><div class="pmd-l">${m.label}</div><div class="pmd-v">${m.value}</div></div>`).join('');
+
+  // Pipeline
+  document.getElementById('dp-pipeline').innerHTML = pln.fases.map(f => {
+    const apr = f.documentos.filter(d => d.estado === 'aprobado').length;
+    return `<div class="fase-step ${f.estado}" onclick="scrollToFase('fase-acc-${f.id}-${plnId}')">
+      <span class="fs-name">${f.nombre}</span>
+      <span class="fs-pct">${f.progreso}%</span>
+      <span class="fs-docs">${apr}/${f.documentos.length} docs</span>
+    </div>`;
+  }).join('');
+
+  // Accordion fases
+  document.getElementById('dp-fases-accordion').innerHTML = pln.fases.map(f => {
+    const docsHtml = f.documentos.length
+      ? `<table class="doc-table">
+          <thead><tr><th>#</th><th>Documento</th><th>Requerido</th><th>Estado</th><th>Versión</th><th>Fecha</th><th>Subido por</th><th>Acciones</th></tr></thead>
+          <tbody>${f.documentos.map((d, i) => `
+            <tr>
+              <td style="color:var(--t3)">${i+1}</td>
+              <td><span class="doc-name-cell">${d.nombre}</span></td>
+              <td><span class="doc-req-badge ${d.requerido ? 'req-si' : 'req-no'}">${d.requerido ? 'Requerido' : 'Opcional'}</span></td>
+              <td>${docStatusBtn(d.estado)}</td>
+              <td>${d.version || '—'}</td>
+              <td>${d.fecha || '—'}</td>
+              <td>${d.subidoPor || '—'}</td>
+              <td><div class="act-btns">
+                ${d.estado !== 'aprobado' ? `<button class="bsm ap" onclick="toast('✅ Documento aprobado')">✓</button>` : ''}
+                ${d.estado === 'revision' ? `<button class="bsm rj" onclick="toast('❌ Documento rechazado')">✕</button>` : ''}
+                ${d.estado === 'pendiente' ? `<button class="bsm" onclick="openUploadModal()">⬆️</button>` : ''}
+                <button class="bsm" onclick="toast('👁️ Abriendo documento...')">Ver</button>
+              </div></td>
+            </tr>`).join('')}
+          </tbody></table>`
+      : `<div class="no-docs">Sin documentos configurados para esta fase</div>`;
+
+    const aprov = f.documentos.filter(d => d.estado === 'aprobado').length;
+    const isOpen = f.estado === 'en_curso' ? ' open' : '';
+
+    return `<div class="fase-block ${f.estado}" id="fase-acc-${f.id}-${plnId}">
+      <div class="fase-block-header" onclick="toggleFaseAcc(this)">
+        <div class="fase-num">${f.orden}</div>
+        <div class="fase-block-name">${f.nombre}</div>
+        <div class="fase-doc-count">${aprov}/${f.documentos.length} aprobados</div>
+        <div class="fase-prog-mini">
+          <div class="prog-bar"><div class="prog-fill ${progFill(f.progreso, f.estado)}" style="width:${f.progreso}%"></div></div>
+          <div style="font-size:10px;color:var(--t3);margin-top:3px;text-align:right">${f.progreso}%</div>
+        </div>
+        ${estadoChip(f.estado)}
+        <div class="fase-chevron${isOpen ? ' open' : ''}">▶</div>
+      </div>
+      <div class="fase-body${isOpen}">${docsHtml}</div>
+    </div>`;
+  }).join('');
+
+  nav('detalle-plano', null);
+  document.getElementById('tb-title').textContent = pln.nombre.substring(0, 40) + (pln.nombre.length > 40 ? '...' : '');
+  document.getElementById('tb-bc').textContent = `${pry.nombre} / ${plnId}`;
+}
+
+function goBackToProject() {
+  nav('proyectos', null);
+}
+
+function scrollToFase(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const body = el.querySelector('.fase-body');
+    if (!body.classList.contains('open')) {
+      body.classList.add('open');
+      el.querySelector('.fase-chevron').classList.add('open');
+    }
+  }
+}
+
+function toggleFaseAcc(headerEl) {
+  const body = headerEl.nextElementSibling;
+  const chevron = headerEl.querySelector('.fase-chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+// ══════════════════════════════════════
+// FORM HELPERS
+// ══════════════════════════════════════
+let planoCount = 1;
+function addPlanoForm() {
+  planoCount++;
+  const div = document.createElement('div');
+  div.className = 'plano-form-item';
+  div.style.cssText = 'background:var(--navy);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-family:var(--fd);font-size:13px;font-weight:600;color:var(--blue-light)">Plano #${planoCount}</span>
+      <button class="btn-s" style="font-size:11px;padding:3px 8px;color:var(--red)" onclick="this.closest('.plano-form-item').remove()">✕ Eliminar</button>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Nombre del Plano <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: Sector X - Nombre Vía"></div>
+      <div class="fg"><label class="fl">Código <span class="req-star">*</span></label><input type="text" class="fc2" placeholder="Ej: OVL-NL-SX-00${planoCount}"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Contrata</label><select class="fc2"><option>Tecnocom S.A.</option><option>Infratel Peru</option><option>RedMax Perú</option></select></div>
+      <div class="fg"><label class="fl">Responsable de Campo</label><input type="text" class="fc2" placeholder="Nombre del responsable"></div>
+    </div>`;
+  document.getElementById('planos-form-list').appendChild(div);
+  toast(`✓ Plano #${planoCount} agregado`);
+}
+
+function toggleFase(el) {
+  el.classList.toggle('sel');
+  const ic = el.querySelector('.ftc-ic');
+  ic.textContent = el.classList.contains('sel') ? '✓' : '';
+}
+
+// Build docs config
+(function buildDocsConfig() {
+  const container = document.getElementById('docs-config-list');
+  if (!container) return;
+  const faseIcons = { 'Diseño':'📐','Permisos':'🏛️','Logística':'📦','Obra Civil':'🏗️','PINT':'⚡','PEXT':'🌐' };
+  Object.entries(MOCK_DATA.documentosPorFase).forEach(([fase, docs]) => {
+    const html = `<div class="dca">
+      <div class="dca-hdr" onclick="toggleDCA(this)">
+        <div class="dca-title">${faseIcons[fase]||'📋'} ${fase}<span class="dca-cnt">${docs.length} docs</span></div>
+        <span style="color:var(--t3);font-size:11px">▼</span>
+      </div>
+      <div class="dca-body">
+        ${docs.map((d, i) => `
+          <div class="doc-ck ${i < 4 ? 'chk' : ''}" onclick="toggleDocCk(this)">
+            <div class="ckbox">${i < 4 ? '✓' : ''}</div>
+            <div class="ck-name">${d}</div>
+            <div class="ck-req ${i < 4 ? 'r' : 'o'}">${i < 4 ? 'Requerido' : 'Opcional'}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+})();
+
+function toggleDCA(hdr) {
+  const body = hdr.nextElementSibling;
+  const arr = hdr.querySelector('span:last-child');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arr.textContent = open ? '▶' : '▼';
+}
+
+function toggleDocCk(el) {
+  el.classList.toggle('chk');
+  const cb = el.querySelector('.ckbox');
+  cb.textContent = el.classList.contains('chk') ? '✓' : '';
+  const req = el.querySelector('.ck-req');
+  req.className = 'ck-req ' + (el.classList.contains('chk') ? 'r' : 'o');
+  req.textContent = el.classList.contains('chk') ? 'Requerido' : 'Opcional';
+}
+
+function filterProjects(type, el) {
+  document.querySelectorAll('.fbar .fc').forEach(f => f.classList.remove('active'));
+  el.classList.add('active');
+  let lista = MOCK_DATA.proyectos;
+  if (type !== 'todos') lista = lista.filter(p => p.estado === type || p.planos.some(pl => pl.estado === type));
+  renderAllProyectos(lista);
+}
+
+function filterType(tipo, el) {
+  document.querySelectorAll('.fbar .fc').forEach(f => f.classList.remove('active'));
+  el.classList.add('active');
+  renderAllProyectos(MOCK_DATA.proyectos.filter(p => p.tipo === tipo));
+}
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+function openUploadModal() { document.getElementById('upload-modal').classList.add('open'); }
+function closeModal() { document.getElementById('upload-modal').classList.remove('open'); }
+document.getElementById('upload-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let toastT;
+function toast(msg) {
+  const el = document.getElementById('toast-el');
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+
+// Dashboard: proyectos resumen
+document.getElementById('dash-proyectos-list').innerHTML =
+  MOCK_DATA.proyectos.map(p => {
+    const planosHtml = p.planos.slice(0,2).map(pl => `
+      <div class="plano-mini-row" style="margin-bottom:5px" onclick="openPlano('${p.id}','${pl.id}')">
+        <div class="plano-mini-id" style="font-size:10px">${pl.codigo}</div>
+        <div class="plano-mini-nombre" style="font-size:12px">${pl.nombre}</div>
+        <div class="pmini-prog" style="width:70px"><div class="prog-bar"><div class="prog-fill ${progFill(pl.progreso, pl.estado)}" style="width:${pl.progreso}%"></div></div></div>
+        ${estadoChip(pl.estado)}
+      </div>`).join('');
+    return `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="pry-type-badge ${typeClass(p.tipo)}" style="font-size:9px">${p.tipo}</span>
+        <span style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--t1)">${p.nombre}</span>
+        ${estadoChip(p.estado)}
+        <span style="margin-left:auto;font-size:11px;color:var(--t3)">${p.totalPlanos} planos</span>
+      </div>
+      ${planosHtml}
+      ${p.planos.length > 2 ? `<div style="font-size:11px;color:var(--t3);padding-left:4px;cursor:pointer" onclick="openPlano('${p.id}','${p.planos[0].id}')">+${p.planos.length-2} más planos →</div>` : ''}
+    </div>`;
+  }).join('');
+
+// Dashboard: activity
+document.getElementById('dash-activity').innerHTML =
+  MOCK_DATA.actividadReciente.map(a => `
+    <div class="act-item">
+      <div class="act-dot" style="background:${{success:'var(--green)',info:'var(--blue)',warning:'var(--amber)',danger:'var(--red)'}[a.tipo]}"></div>
+      <div><div class="act-text"><span class="act-bold">${a.accion}</span> · ${a.detalle}</div>
+      <div class="act-time">👤 ${a.usuario} · ${a.tiempo}</div></div>
+    </div>`).join('');
+
+// Dashboard alerts
+document.getElementById('dash-alerts').innerHTML = MOCK_DATA.alertas.slice(0,3).map(renderAlertRow).join('');
+
+// Proyectos page
+renderAllProyectos(MOCK_DATA.proyectos);
+
+// All alerts
+document.getElementById('all-alerts').innerHTML = MOCK_DATA.alertas.map(renderAlertRow).join('');
+
+// Contratas
+document.getElementById('contratas-list').innerHTML = MOCK_DATA.contratas.map(c => `
+  <div class="card" style="margin:0">
+    <div class="cb">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="u-av" style="width:38px;height:38px;font-size:13px">${c.nombre.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px;color:var(--t1)">${c.nombre}</div>
+          <div style="font-size:11.5px;color:var(--t3)">${c.contacto} · ${c.email}</div>
+        </div>
+        <span class="chip ${c.activo ? 'chip-ec' : 'chip-at'}">${c.activo ? 'Activo' : 'Inactivo'}</span>
+      </div>
+      <div style="display:flex;gap:16px">
+        <div><div style="font-size:11px;color:var(--t3)">Planos asignados</div><div style="font-weight:700;font-size:16px;font-family:var(--fd)">${c.planos}</div></div>
+      </div>
+    </div>
+  </div>`).join('');
+</script>
+</body>
+</html>
